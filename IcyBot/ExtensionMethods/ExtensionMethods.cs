@@ -15,17 +15,28 @@ namespace IcyBot
 				param = new object[0];
 			string message = string.Format(text, param);
 			int _maxChar = -1;
-			if (IcyBot.Config.MaxChars.TryGetValue(data.Irc.Address, out _maxChar))
+			var CInfo = IcyBot.Config.ircConnectionInfo.FirstOrDefault(x => x.ServerName.ToLower() == data.Irc.Address.ToLower());
+			if (CInfo != null)
 			{
-				List<string> messageArray = ChunksUpto(message, _maxChar).ToList();
-				foreach (string str in messageArray)
+				if (!CInfo.UseColors)
+					color = string.Empty;
+
+				if (CInfo.MaxChar != -1)
 				{
-					data.Irc.SendMessage(SendType.Message, data.Channel, color + str);
+					List<string> messageArray = ChunksUpto(message, _maxChar).ToList();
+					foreach (string str in messageArray)
+					{
+						data.Irc.SendMessage(SendType.Message, data.Channel, color + str);
+					}
+				}
+				else
+				{
+					data.Irc.SendMessage(SendType.Message, data.Channel, color + message);
 				}
 			}
-			else 
+			else
 			{
-				data.Irc.SendMessage(SendType.Message, data.Channel, color + message);
+				Console.WriteLine("Error: Connect locate config for this server!");
 			}
 		}
 		public static void SendText(this IrcMessageData data, string text, params object[] param)

@@ -64,7 +64,8 @@ namespace IcyBot
 		public int SendDelay { get; set; }
 		public bool Ghost { get; set; }
 		public int MaxChar { get; set; }
-		public ConnectInfo(string server, List<string> channels, string name, string pass, int senddelay = 200, bool ghost = false, int maxChar = -1)
+		public bool UseColors { get; set; }
+		public ConnectInfo(string server, List<string> channels, string name, string pass, int senddelay = 200, bool ghost = false, int maxChar = -1, bool useColors = true)
 		{
 			Ghost = ghost;
 			ServerName = server;
@@ -73,6 +74,7 @@ namespace IcyBot
 			Password = pass;
 			MaxChar = maxChar;
 			SendDelay = senddelay;
+			UseColors = useColors;
 		}
 	}
 }
