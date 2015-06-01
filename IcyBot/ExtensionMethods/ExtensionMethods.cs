@@ -14,7 +14,6 @@ namespace IcyBot
 			if (param == null)
 				param = new object[0];
 			string message = string.Format(text, param);
-			int _maxChar = -1;
 			var CInfo = IcyBot.Config.ircConnectionInfo.FirstOrDefault(x => x.ServerName.ToLower() == data.Irc.Address.ToLower());
 			if (CInfo != null)
 			{
@@ -23,7 +22,7 @@ namespace IcyBot
 
 				if (CInfo.MaxChar != -1)
 				{
-					List<string> messageArray = ChunksUpto(message, _maxChar).ToList();
+					List<string> messageArray = ChunksUpto(message, CInfo.MaxChar).ToList();
 					foreach (string str in messageArray)
 					{
 						data.Irc.SendMessage(SendType.Message, data.Channel, color + str);
