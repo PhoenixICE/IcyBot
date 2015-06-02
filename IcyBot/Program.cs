@@ -16,7 +16,7 @@ namespace IcyBot
 		private static AutoResetEvent autoEvent = new AutoResetEvent(false);
 		public static Random Rand = new Random();
 		public static Config Config = new Config();
-		private static readonly string filepathconfig = "D:\\IcyBotIcyBot.Config.txt";
+		private static readonly string filepathconfig = "D:\\IcyBot.Config.txt";
 
 		// this method we will use to analyse queries (also known as private messages)
 		public static void OnQueryMessage(object sender, IrcEventArgs e)

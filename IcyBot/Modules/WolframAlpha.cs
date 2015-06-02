@@ -26,7 +26,7 @@ namespace IcyBot.Modules
 				return;
 			}
 			string search = string.Join(" ", args.Parameters);
-			string URL = "http://api.wolframalpha.com/v2/query?input=" + System.Web.HttpUtility.UrlEncode(search) + "&appid=" + "R7X37H-U8H66PR83G" + "&format=plaintext";
+			string URL = "http://api.wolframalpha.com/v2/query?input=" + System.Web.HttpUtility.UrlEncode(search) + "&appid=" + IcyBot.Config.WolframalphaID + "&format=plaintext";
 			XmlNodeList xnList = null;
 			try
 			{

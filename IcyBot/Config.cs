@@ -13,6 +13,7 @@ namespace IcyBot
 		public string fileName { get; set; }
 		public string Color { get; set; }
 		public string ErrorColor { get; set; }
+		public string WolframalphaID { get; set; }
 		public List<ConnectInfo> ircConnectionInfo { get; set; }
 
 		public static Config Read(string path)
@@ -51,7 +52,7 @@ namespace IcyBot
 				sw.Write(str);
 			}
 		}
-		public static Action<Config> ConfigRead;
+		public static Action<Config> ConfigRead;		
 	}
 
 	public class ConnectInfo
