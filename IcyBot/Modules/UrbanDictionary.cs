@@ -20,18 +20,23 @@ namespace IcyBot.Modules
 		}
 
 		public void UrbanDictionaryMain(CommandArgs args)
-		{					
+		{
 			if (args.Parameters.Count == 0)
 			{
-				args.Args.Data.SendErrorText("ud <text>");
+				args.Args.Data.SendErrorText("ud [number] <text>");
 				return;
 			}
-			string inputstring = string.Join(" ", args.Parameters);
-			args.Args.Data.SendText(UrbanDictionaryMethod(inputstring));
-		}
 
-		public string UrbanDictionaryMethod(string word)
-		{
+			int _number = 0;
+
+			string word = string.Join(" ", args.Parameters);
+
+			if (int.TryParse(args.Parameters[0], out _number))
+			{
+				args.Parameters.RemoveAt(0);
+				word = string.Join(" ", args.Parameters);
+			}
+
 			var req = HttpWebRequest.Create(UrlRandom);
 			var res = req.GetResponse();
 			var reader = new StreamReader(res.GetResponseStream());
@@ -41,12 +46,44 @@ namespace IcyBot.Modules
 			res = req.GetResponse();
 			reader = new StreamReader(res.GetResponseStream());
 			obj = JObject.ReadFrom(new JsonTextReader(reader));
-
-			foreach (var i in (JArray)obj["list"])
+			JArray _defList = ((JArray)obj["list"]);
+			if (_defList.Count != 0)
 			{
-				return (string)((JObject)i).Property("definition").Value;
+				if (_number == 0)
+				{
+					for (int i = 0; i < _defList.Count; i++)
+					{
+						string definition = ((string)((JObject)_defList[i]).Property("definition").Value).Trim();
+						if (definition.Length > 203)
+						{
+							definition = definition.Substring(0, 203) + "...";
+						}
+						if (!string.IsNullOrWhiteSpace(definition))
+							args.Args.Data.SendText(":: [{0}/{1}] {2} :: {3} ::", i + 1, _defList.Count, word, definition);
+						if (i > 1)
+						{
+							break;
+						}
+					}
+					args.Args.Data.SendText("To view a single definition with a related example, type: {0}ud [def_number] {1}", IcyBot.Config.CommandSpecifier, word);
+				}
+				else
+				{
+					if (_number - 1 > _defList.Count)
+					{
+						args.Args.Data.SendErrorText("No definition found");
+						return;
+					}
+					else
+					{
+						args.Args.Data.SendText(_number + ": " + (string)((JObject)_defList[_number - 1]).Property("definition").Value);
+					}
+				}
 			}
-			return "No definition found";
+			else
+			{
+				args.Args.Data.SendErrorText("No definition found");
+			}	
 		}
 	}
 }
