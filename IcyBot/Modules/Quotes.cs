@@ -29,14 +29,14 @@ namespace IcyBot.Modules
 				args.Args.Data.SendText("quote read <id/random/last>");
 				return;
 			}
-			if (args.Parameters[0].ToLower() == "add")
+			if (args.Parameters[0].ToLower() == "add" && args.Args.IsOp())
 			{
 				var _quote = AddQuote(string.Join(" ", args.Parameters.Skip(1)), args.Args.Data.Nick);
 				args.Args.Data.SendText(_quote.ToString());
 				args.Args.Data.SendText(_quote.ToString2());
 				return;
 			}
-			else if (args.Parameters[0].ToLower() == "del" && false)
+			else if (args.Parameters[0].ToLower() == "del" && args.Args.IsOp())
 			{
 				int ID;
 				if (!int.TryParse(args.Parameters[1], out ID))

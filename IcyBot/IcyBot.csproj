@@ -64,12 +64,14 @@
     <Compile Include="Classes\Character.cs" />
     <Compile Include="Classes\CharacterClass.cs" />
     <Compile Include="Classes\CharacterStat.cs" />
+    <Compile Include="Classes\MalXML.cs" />
     <Compile Include="CommandHandler.cs" />
     <Compile Include="ExtensionMethods\ExtensionMethods.cs" />
     <Compile Include="IrcEnums.cs" />
     <Compile Include="IrcPlugin.cs" />
     <Compile Include="LoadModules.cs" />
     <Compile Include="Modules\Admin.cs" />
+    <Compile Include="Modules\Anime.cs" />
     <Compile Include="Modules\ChatBot.cs" />
     <Compile Include="Modules\Commands.cs" />
     <Compile Include="Classes\Dialogue.cs" />

@@ -14,6 +14,8 @@ namespace IcyBot
 		public string Color { get; set; }
 		public string ErrorColor { get; set; }
 		public string WolframalphaID { get; set; }
+		public string MalUsername { get; set; }
+		public string MalPassword { get; set; }
 		public List<ConnectInfo> ircConnectionInfo { get; set; }
 
 		public static Config Read(string path)
@@ -65,16 +67,5 @@ namespace IcyBot
 		public bool Ghost { get; set; }
 		public int MaxChar { get; set; }
 		public bool UseColors { get; set; }
-		public ConnectInfo(string server, List<string> channels, string name, string pass, int senddelay = 200, bool ghost = false, int maxChar = -1, bool useColors = true)
-		{
-			Ghost = ghost;
-			ServerName = server;
-			Channels = channels;
-			Username = name;
-			Password = pass;
-			MaxChar = maxChar;
-			SendDelay = senddelay;
-			UseColors = useColors;
-		}
 	}
 }

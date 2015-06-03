@@ -52,7 +52,7 @@ namespace IcyBot
 			if (e != null && e.Data != null && e.Data.Message != null)
 			if (e.Data.Message.StartsWith(IcyBot.Config.CommandSpecifier))
 			{
-				System.Console.WriteLine("Received: " + e.Data.RawMessage);
+				System.Console.WriteLine(string.Format("{0} {1} {2}", e.Data.Nick, e.Data.Irc.Address, e.Data.Message));
 				try
 				{
 					string error = string.Empty;
