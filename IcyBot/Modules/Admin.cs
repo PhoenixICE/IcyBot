@@ -23,6 +23,8 @@ namespace IcyBot.Modules
 			Commands.ChatCommands.Add(new Command(UnMute, "unmute"));
 			Commands.ChatCommands.Add(new Command(NickBan, "nc"));
 			Commands.ChatCommands.Add(new Command(UnNickBan, "unnc"));
+			Commands.ChatCommands.Add(new Command(Moderate, "mod"));
+			Commands.ChatCommands.Add(new Command(DeModerate, "demod"));
 		}
 
 		private void UnNickBan(CommandArgs args)
@@ -133,6 +135,26 @@ namespace IcyBot.Modules
 			}
 		}
 
+		private void Moderate(CommandArgs args)
+		{
+			if (!args.Args.IsOp())
+			{
+				return;
+			}
+			args.Args.Data.SendText("This channel is now in Moderator mode only people with Voice or higher can speak.");
+			args.Args.Data.RunCommand("mode {0} +m", args.Args.Data.Channel);	
+		}
+
+		private void DeModerate(CommandArgs args)
+		{
+			if (!args.Args.IsOp())
+			{
+				return;
+			}
+			args.Args.Data.SendText("Moderate mode has been disabled all users can now speak freely.");
+			args.Args.Data.RunCommand("mode {0} -m", args.Args.Data.Channel);
+		}
+
 		private void Raw(CommandArgs args)
 		{
 			if (!args.Args.IsOp())
@@ -140,7 +162,7 @@ namespace IcyBot.Modules
 				return;
 			}
 			string inputstring = string.Join(" ", args.Parameters);
-			args.Client.SendMessage(SendType.Action, args.Args.Data.Channel, inputstring);
+			args.Client.SendMessage(SendType.Message, args.Args.Data.Channel, inputstring);
 		}
 
 		private void Ban(CommandArgs args)

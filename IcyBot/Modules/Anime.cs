@@ -65,11 +65,11 @@ namespace IcyBot.Modules
 					}
 					else if (count > 1)
 					{
-						data.SendText("More then one match found: {0}", string.Join(", ", _xml.AnimeList.Select(x => x.AnimeInfo.Title)));
+						data.SendErrorText("More then one match found: {0}", string.Join(", ", _xml.AnimeList.Select(x => x.AnimeInfo.Title)));
 					}
-					var animeinfo = _xml.AnimeList.ElementAt(0).AnimeInfo;
+					var animeinfo = _xml.AnimeList.ElementAt(IcyBot.Rand.Next(0, count)).AnimeInfo;
 					data.SendText("Title: {0} Episodes: {1} Type: {2} Status: {3} Image: {4}", animeinfo.Title, animeinfo.NumEpisodes, animeinfo.Type, animeinfo.Status, animeinfo.ImageUrl);
-					data.SendText("{0}", animeinfo.Synopsis);
+					data.SendText("{0}", XmlConvert.DecodeName(animeinfo.Synopsis));
 				}
 				else
 				{
@@ -168,11 +168,11 @@ namespace IcyBot.Modules
 
 					string seriesImage = GetElementValueString(anime, "image");
 
-					string seriesSynopsis = GetElementValueString(anime, "synopsis");
+					string seriesSynopsis = GetElementValueString(anime, "synopsis").Replace(@"<br />", "");
 
 					MalAnimeInfoFromUserLookup animeInfo = new MalAnimeInfoFromUserLookup(animeId: animeId, title: title,
 						type: seriesType, synonyms: synonyms, status: seriesStatus, numEpisodes: numEpisodes, startDate: seriesStart,
-						endDate: seriesEnd, imageUrl: seriesImage, synopsis: seriesSynopsis.Replace("<br /> <br />", ""));					
+						endDate: seriesEnd, imageUrl: seriesImage, synopsis: seriesSynopsis);					
 
 					MyAnimeListEntry entry = new MyAnimeListEntry(animeInfo: animeInfo);
 

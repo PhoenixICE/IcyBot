@@ -13,16 +13,7 @@ namespace IcyBot
 	{
 		public static void Load()
 		{
-			//Admin.OnInitialize();
-			//Find.OnInitialize();
-			//Quiz.OnInitialize();
-			//Quotes.OnInitialize();
-			//UrbanDictionary.OnInitialize();
-			//WorldBossDungeonInfo.OnInitialize();
-			//JsonPhraser.OnInitialize();
-			//Translate.OnInitialize();
-			//WolframAlpha.OnInitialize();
-			Commands.HelpCommand();
+			Commands.SystemCommand();
 
 			foreach(var obj in ReflectiveEnumerator.GetEnumerableOfType<IrcPlugin>())
 			{

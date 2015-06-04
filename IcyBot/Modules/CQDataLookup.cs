@@ -170,18 +170,11 @@ namespace IcyBot.Modules
 
 		private void Random(CommandArgs args)
 		{
-			string argString = string.Empty;
-			if (args.Parameters.Count > 0)
-			{
-				argString = string.Join(" ", args.Parameters);
-			}
-			args.Args.Data.SendText(GetRandom(argString));
+			args.Args.Data.SendText(GetRandom(args.Parameters));
 		}
-
-		private string GetRandom(string argString)
+		private string GetRandom(List<string> param)
 		{
-			argString = argString.TrimEnd(' ');
-			List<string> param = argString.Split(' ').ToList();
+			string argString = string.Join(" ", param).TrimEnd(' ');
 			int argIndex = 0;
 			bool textSearch = false;
 			if (param.Count() > 0)

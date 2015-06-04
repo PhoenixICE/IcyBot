@@ -58,10 +58,51 @@ namespace IcyBot
 	public static class Commands
 	{
 		public static List<Command> ChatCommands = new List<Command>();
+		private static List<string> IgnoreList = new List<string>();
 
-		public static void HelpCommand()
+		public static void SystemCommand()
 		{
 			ChatCommands.Add(new Command(Help, "help"));
+			ChatCommands.Add(new Command(Ignore, "ignore"));
+			ChatCommands.Add(new Command(UnIgnore, "unignore"));
+		}
+
+		private static void Ignore(CommandArgs args)
+		{
+			string inputstring = string.Join(" ", args.Parameters);
+			var user = args.Client.GetChannelUser(args.Args.Data.Channel, inputstring);
+			if (user == null)
+			{
+				args.Args.Data.SendText("Can't find User: {0}", inputstring);
+			}
+			else
+			{
+				IgnoreList.Add(user.Nick.ToLower());
+				IgnoreList.Add(user.Host);
+				args.Args.Data.SendText("Now Ignoring all commands run by {0}", user.Nick);
+			}		
+		}
+
+		private static void UnIgnore(CommandArgs args)
+		{
+			string inputstring = string.Join(" ", args.Parameters);
+			var user = args.Client.GetChannelUser(args.Args.Data.Channel, inputstring);
+			if (user == null)
+			{
+				args.Args.Data.SendText("Can't find User: {0}", inputstring);
+			}
+			else
+			{
+				if (IgnoreList.Contains(args.Args.Data.Nick.ToLower()))
+				{
+					IgnoreList.Remove(user.Nick.ToLower());
+				}
+				if (IgnoreList.Contains(args.Args.Data.Host))
+				{
+					IgnoreList.Remove(user.Host);
+				}
+				args.Args.Data.SendText("Stopped Ignoring all commands run by {0}", user.Nick);
+			}
 		}
 
 		private static void Help(CommandArgs args)
@@ -72,6 +113,15 @@ namespace IcyBot
 		public static void HandleCommand(IrcEventArgs e, IrcClient client, out string error)
 		{
 			error = string.Empty;
+
+			if (!e.IsOp())
+			{
+				if (IgnoreList.Contains(e.Data.Nick.ToLower()) || IgnoreList.Contains(e.Data.Host))
+				{
+					return;
+				}
+			}
+
 			string text = e.Data.Message;
 			string user = e.Data.Nick;
 			string cmdText = text.Remove(0, 1);
