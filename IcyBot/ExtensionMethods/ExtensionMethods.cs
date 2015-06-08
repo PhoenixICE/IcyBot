@@ -55,6 +55,10 @@ namespace IcyBot
 		public static bool IsOp(this IrcEventArgs ircEventArgs)
 		{
 			var user = ircEventArgs.Data.Irc.GetChannelUser(ircEventArgs.Data.Channel, ircEventArgs.Data.Nick);
+			if (user == null)
+			{
+				return false;
+			}
 			if (!user.IsOp)
 				return false;
 			else

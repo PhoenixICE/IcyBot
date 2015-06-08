@@ -160,8 +160,8 @@ namespace IcyBot
 						}
 
 						Console.WriteLine(string.Format("Error - Disconnected from Server {0}, attempting to reconnect!", irc.Address));
-						//5 minute retry periods
-						Thread.Sleep(5*60*1000);
+						//1 minute retry periods
+						Thread.Sleep(1*60*1000);
 					}
 				});
 			}

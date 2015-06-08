@@ -77,8 +77,14 @@ namespace IcyBot
 			}
 			else
 			{
-				IgnoreList.Add(user.Nick.ToLower());
-				IgnoreList.Add(user.Host);
+				if (!IgnoreList.Contains(args.Args.Data.Nick.ToLower()))
+				{
+					IgnoreList.Add(user.Nick.ToLower());
+				}
+				if (!IgnoreList.Contains(args.Args.Data.Host))
+				{
+					IgnoreList.Add(user.Host);
+				}
 				args.Args.Data.SendText("Now Ignoring all commands run by {0}", user.Nick);
 			}		
 		}

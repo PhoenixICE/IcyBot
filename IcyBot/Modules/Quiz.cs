@@ -72,9 +72,9 @@ namespace IcyBot.Modules
 		private void QuizMain(CommandArgs args)
 		{
 			List<string> _channelList;
-			if (QuizChannel.TryGetValue(args.Client, out _channelList) && _channelList.Contains(args.Args.Data.Channel))
+			if (QuizChannel.TryGetValue(args.Client, out _channelList) && _channelList.Contains(args.Args.Data.Channel.ToLower()))
 			{
-				_channelList.Remove(args.Args.Data.Channel);
+				_channelList.Remove(args.Args.Data.Channel.ToLower());
 				if (_channelList.Count == 0)
 				{
 					QuizChannel.Remove(args.Client);
@@ -86,11 +86,12 @@ namespace IcyBot.Modules
 				bool _start = false;
 				if (!QuizEnabled)
 				{
+
 					_start = true;
 				}
 				if (!QuizChannel.TryGetValue(args.Client, out _channelList))
 				{
-					QuizChannel.Add(args.Client, new List<string>() { args.Args.Data.Channel });
+					QuizChannel.Add(args.Client, new List<string>() { args.Args.Data.Channel.ToLower() });
 				}
 				args.Client.OnRawMessage += new IrcEventHandler(QuizAnswerMethod);
 				args.Args.Data.SendText("Quiz is now: Enabled");
@@ -116,6 +117,14 @@ namespace IcyBot.Modules
 
 		public void QuizAnswerMethod(object sender, IrcEventArgs e)
 		{
+			if (e.Data == null || e.Data.Channel == null || e.Data.Message == null || e.Data.Nick == null)
+			{
+				return;
+			}
+			if (!QuizChannel.ContainsKey(e.Data.Irc))
+			{
+				return;
+			}
 			if (QuizChannel[e.Data.Irc].Contains(e.Data.Channel, StringComparer.CurrentCultureIgnoreCase))
 			{
 				lock (WriteLock)

@@ -56,6 +56,7 @@ namespace IcyBot.Modules
 			if (!int.TryParse(args.Parameters[1], out Score))
 			{
 				args.Args.Data.SendErrorText( string.Format("Error: Score must be numerical, {0}", args.Parameters[1]));
+				return;
 			}
 			OriginalScore = Score;
 			if (League == "master")
@@ -148,6 +149,7 @@ namespace IcyBot.Modules
 						if (TargetScore <= Score)
 						{
 							args.Args.Data.SendText("Tickets Required to get from Score {0} to Score {1} : {2} Tickets", OriginalScore, TargetScore, TicketsRequired);
+							return;
 						}
 					}
 				}
