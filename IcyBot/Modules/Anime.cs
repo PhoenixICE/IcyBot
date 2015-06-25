@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using System.IO;
@@ -33,14 +34,31 @@ namespace IcyBot.Modules
 		{
 			if (args.Parameters.Count == 0)
 			{
-				args.Args.Data.SendText("anime <name>");
+				args.Args.Data.SendText("anime \"<name>\" [page]");
 				return;
 			}
-
-			GetAnime(string.Join(" ", args.Parameters), args.Args.Data);
+			string _searchStr = string.Join(" ", args.Parameters);
+			int page = 1;
+			if (args.Parameters.Count > 1)
+			{
+				if (!int.TryParse(args.Parameters[args.Parameters.Count - 1], out page))
+				{
+					page = 1;
+				}
+				else
+				{
+					_searchStr = string.Join(" ", args.Parameters.GetRange(0, args.Parameters.Count - 1));
+				}
+			}
+			if (_searchStr.Length < 4)
+			{
+				args.Args.Data.SendErrorText("Search String must be greater then 4 characters! {0}", _searchStr);
+				return;
+			}
+			GetAnime(_searchStr, args.Args.Data, page);
 		}
 
-		public void GetAnime(string search, IrcMessageData data)
+		public void GetAnime(string search, IrcMessageData data, int page)
 		{
 			search = WebUtility.HtmlEncode(search);
 			string sUrl = "http://myanimelist.net/api/anime/search.xml?q=" + search;
@@ -54,7 +72,7 @@ namespace IcyBot.Modules
 			using (StreamReader reader = new StreamReader(ObjStream))
 			{
 				string _str = reader.ReadToEnd();
-				_str = XmlConvert.DecodeName(_str).Replace(@"&mdash;", "").Replace(@"mdash;", "");
+				_str = Regex.Replace(XmlConvert.DecodeName(_str), @"&?\w+?;", string.Empty).Replace("br /", string.Empty);
 				if (!string.IsNullOrWhiteSpace(_str))
 				{
 					var _xml = MalAppInfoXml.Parse(_str);
@@ -62,14 +80,38 @@ namespace IcyBot.Modules
 					if (count == 0)
 					{
 						data.SendErrorText("No Anime found for name: {0}", search);
-					}
+					}						
 					else if (count > 1)
 					{
-						data.SendErrorText("More then one match found: {0}", string.Join(", ", _xml.AnimeList.Select(x => x.AnimeInfo.Title)));
+						//check exact match first
+						var animeinfos = _xml.AnimeList.Where(x => x.AnimeInfo.Title.ToLower() == search.ToLower());
+						if (animeinfos.Count() == 1)
+						{
+							OutputAnimeInfo(animeinfos.ElementAt(0).AnimeInfo, data);
+							return;
+						}
+						//other display all options
+						int _start = (page - 1) * 10;
+						int _pages = (int)Math.Ceiling((_xml.AnimeList.Count / 10.0));
+						if (_start < 0)
+						{
+							_start = 0;
+						}
+						else if (_start > count - 1)
+						{
+							_start = count - 1;
+						}
+						int _count = 10;
+						if (_start + 10 > count)
+						{
+							_count = count - _start;
+						}
+						var _list = _xml.AnimeList.Select(x => x.AnimeInfo.Title).ToList().GetRange(_start, _count);
+						data.SendErrorText("More then one match found! {0}", string.Join(" [::] ", _list));
+						data.SendErrorText("Page [{0}/{1}]{2}", page, _pages, (page != _pages ? string.Format(": next page: {2}anime \"{0}\" {1}", search, page + 1, IcyBot.Config.CommandSpecifier) : string.Empty));
+						return;
 					}
-					var animeinfo = _xml.AnimeList.ElementAt(IcyBot.Rand.Next(0, count)).AnimeInfo;
-					data.SendText("Title: {0} Episodes: {1} Type: {2} Status: {3} Image: {4}", animeinfo.Title, animeinfo.NumEpisodes, animeinfo.Type, animeinfo.Status, animeinfo.ImageUrl);
-					data.SendText("{0}", XmlConvert.DecodeName(animeinfo.Synopsis));
+					OutputAnimeInfo(_xml.AnimeList.ElementAt(0).AnimeInfo, data);
 				}
 				else
 				{
@@ -77,6 +119,12 @@ namespace IcyBot.Modules
 				}
 			}
 		}
+
+		private void OutputAnimeInfo(MalAppInfoXml.MalAnimeInfoFromUserLookup animeinfo, IrcMessageData data)
+		{
+			data.SendText("Title: {0} Episodes: {1} Type: {2} Status: {3} Image: {4}", animeinfo.Title, animeinfo.NumEpisodes, animeinfo.Type, animeinfo.Status, animeinfo.ImageUrl);
+			data.SendText("{0}", XmlConvert.DecodeName(animeinfo.Synopsis));
+		}	
 
 		public static class MalAppInfoXml
 		{
@@ -447,7 +495,7 @@ namespace IcyBot.Modules
 					StartDate = startDate;
 					EndDate = endDate;
 					ImageUrl = imageUrl;
-					Synopsis = synopsis;
+					Synopsis = Regex.Replace(synopsis, @"\[..?\]", string.Empty);
 				}
 
 				public override bool Equals(object obj)

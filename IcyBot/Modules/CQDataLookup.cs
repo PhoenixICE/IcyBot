@@ -21,6 +21,54 @@ namespace IcyBot.Modules
 			Commands.ChatCommands.Add(new Command(Goddess, "goddess"));
 			Commands.ChatCommands.Add(new Command(Random, "random"));
 			Commands.ChatCommands.Add(new Command(Stage, "stage"));
+			Commands.ChatCommands.Add(new Command(Languages, "lang"));
+			Commands.ChatCommands.Add(new Command(Stat, "stats"));
+		}
+
+		private void Stat(CommandArgs args)
+		{
+			if (args.Parameters.Count == 0)
+			{
+				args.Args.Data.SendErrorText("stats \"<name>\" [level] [train]");
+				return;
+			}
+			int level = 60;
+			int train = 5;
+
+			if (args.Parameters.Count >= 2)
+			{
+				if (!int.TryParse(args.Parameters[1], out level))
+				{
+					args.Args.Data.SendErrorText("Error: Invalid level entered.");
+					return;
+				}
+			}
+			
+			if (args.Parameters.Count >= 3)
+			{
+				if (!int.TryParse(args.Parameters[2], out train))
+				{
+					args.Args.Data.SendErrorText("Error: Invalid train entered.");
+					return;
+				}
+			}
+
+			Information _info;
+			string ReturnString = GetCharacter(args.Parameters[0], out _info);
+			
+			if (ReturnString == "")
+			{
+				args.Args.Data.SendText("Lv.{6} {0} +{7} | HA: {1} Def: {2} Res: {3} HP: {4} CC: {5}%", _info.Name, (int)_info.Stats.GetHA(level, train), (int)_info.Stats.GetDefence(level, train), (int)_info.Stats.GetResist(level, train), (int)_info.Stats.GetHP(level, train), _info.Stats.CritChance * 100, level, train);
+			}
+			else
+			{
+				args.Args.Data.SendErrorText(ReturnString);
+			}
+		}
+
+		private void Languages(CommandArgs args)
+		{
+			args.Args.Data.SendText("Language switches are: DeDe, EnUs, EsEs, FrFr, ItIt, JaJp, KoKr, PtBr, RuRu, ThTh, ZhCn, ZhTw");
 		}
 
 		private void Stage(CommandArgs args)
@@ -31,7 +79,15 @@ namespace IcyBot.Modules
 				return;
 			}
 			Stages _info;
-			string ReturnString = GetStage(string.Join(" ", args.Parameters), out _info);
+			string ReturnString = string.Empty;
+			if (args.Parameters[0].StartsWith("-"))
+			{
+				ReturnString = GetStage(string.Join(" ", args.Parameters.Skip(1)), out _info, args.Parameters[0].Remove(0, 1));
+			}
+			else
+			{
+				ReturnString = GetStage(string.Join(" ", args.Parameters), out _info);
+			}
 			if (ReturnString == "")
 			{
 				args.Args.Data.SendText(_info.ToString());
@@ -69,7 +125,7 @@ namespace IcyBot.Modules
 			return _StageNameTxt;
 		}
 
-		private string GetStage(string Name, out Stages _Info)
+		private string GetStage(string Name, out Stages _Info, string lang = "EnUs")
 		{
 			Name = Name.TrimStart(' ');
 			Locales _StageNameTxt = GetStageLocales(Name);
@@ -115,7 +171,7 @@ namespace IcyBot.Modules
 					return string.Format("Could not find Weapon Cat ID: {0}!", _WeaponCat.Name);
 				}
 
-				_WeaponTxt.Add(_WeaponCatName.EnUs);
+				_WeaponTxt.Add(_WeaponCatName.GetText(lang));
 			}
 
 			_Info = new Stages();
@@ -146,7 +202,7 @@ namespace IcyBot.Modules
 						continue;
 					}
 
-					_bosses.BossName = _name.EnUs;
+					_bosses.BossName = _name.GetText(lang);
 					_Info.Bosses.Add(_bosses);
 				}
 			}
@@ -157,7 +213,7 @@ namespace IcyBot.Modules
 			_Info.MeatNeeded = _Stage.Heartneed;
 			_Info.MaxWeaponStars = _Stage.DropableWeaponType.MaxGrade;
 			_Info.MinWeaponStars = _Stage.DropableWeaponType.MinGrade;
-			_Info.Name = _StageNameTxt.EnUs;
+			_Info.Name = _StageNameTxt.GetText(lang);
 			_Info.Popo = _Stage.Gypsiappear;
 			_Info.RewardType = _Stage.Clearrewardtype;
 			_Info.RewardValue = _Stage.Clearrewardvalue;
@@ -170,11 +226,19 @@ namespace IcyBot.Modules
 
 		private void Random(CommandArgs args)
 		{
-			args.Args.Data.SendText(GetRandom(args.Parameters));
+			args.Args.Data.SendText(GetRandom(args.Parameters).Replace("{", string.Empty).Replace("}", string.Empty));
 		}
 		private string GetRandom(List<string> param)
 		{
+			string lang = "EnUs";
 			string argString = string.Join(" ", param).TrimEnd(' ');
+			if (param.Count > 1 && param[0].StartsWith("-"))
+			{
+				lang = param[0].Remove(0, 1);
+				param = param.Skip(1).ToList();
+				argString = string.Join(" ", param).TrimEnd(' ');
+			}
+
 			int argIndex = 0;
 			bool textSearch = false;
 			if (param.Count() > 0)
@@ -185,10 +249,11 @@ namespace IcyBot.Modules
 				}
 			}
 
-			List<string> str = JsonPhraser.TextLocale.locale.Where(x => !string.IsNullOrEmpty(x.EnUs) && x.EnUs.Count(y => y == ' ') > 2).Select(x => x.EnUs).ToList();
+			Dictionary<string, string> str = JsonPhraser.TextLocale.locale.Where(x => !string.IsNullOrEmpty(x.EnUs) && x.EnUs.Count(y => y == ' ') > 2).ToDictionary(y => y.Id, x => x.GetText(lang));
 			if (param.Count() == 0)
 			{
-				return str[IcyBot.Rand.Next(0, str.Count)];
+				var value = str.ElementAt(IcyBot.Rand.Next(0, str.Keys.Count));
+				return value.Key + ": " + Regex.Replace(value.Value.Replace(@"\n", ""), "{..?}", string.Empty);
 			}
 			else if (!textSearch)
 			{
@@ -196,19 +261,23 @@ namespace IcyBot.Modules
 				{
 					return string.Format("Text line number {0}, does not exist!", argIndex);
 				}
-				return str[argIndex].Replace(@"\n", "");
+				var value = str.ElementAt(argIndex);
+				return value.Key + ": " + Regex.Replace(value.Value.Replace(@"\n", ""), "{..?}", string.Empty);
 			}
 			else
 			{
-				str = JsonPhraser.TextLocale.locale.Where(x => !string.IsNullOrEmpty(x.EnUs) && x.EnUs.ToLower().Contains(argString.ToLower())).Select(x => x.EnUs).ToList();
+				str = JsonPhraser.TextLocale.locale.Where(x => !string.IsNullOrEmpty(x.EnUs) && x.EnUs.ToLower().Contains(argString.ToLower())).ToDictionary(y => y.Id, x => x.GetText(lang));
 				if (str == null || str.Count == 0)
 				{
 					return string.Format("No Matches for {0} was found!", argString);
 				}
-				string currStr = str[IcyBot.Rand.Next(0, str.Count)];
+				var value = str.ElementAt(IcyBot.Rand.Next(0, str.Count));
+				string currStr = value.Value;
 				int start = currStr.IndexOf(argString, StringComparison.CurrentCultureIgnoreCase);
-				string value = currStr.Substring(0, start) + ControlCode.Bold + currStr.Substring(start, argString.Length) + ControlCode.Bold + currStr.Substring(start + argString.Length);
-				return value;
+				string stringFormatted = currStr;
+				if (start > 0)
+					stringFormatted = currStr.Substring(0, start) + ControlCode.Bold + currStr.Substring(start, argString.Length) + ControlCode.Bold + currStr.Substring(start + argString.Length);
+				return value.Key + ": " + Regex.Replace(stringFormatted.Replace(@"\n", ""), "{..?}", string.Empty);
 			}
 		}
 
@@ -220,7 +289,15 @@ namespace IcyBot.Modules
 				return;
 			}
 			Goddesses _info;
-			string ReturnString = GetGoddess(string.Join(" ", args.Parameters), out _info);
+			string ReturnString = string.Empty;
+			if (args.Parameters[0].StartsWith("-"))
+			{
+				ReturnString = GetGoddess(string.Join(" ", args.Parameters.Skip(1)), out _info, args.Parameters[0].Remove(0, 1));
+			}
+			else
+			{
+				ReturnString = GetGoddess(string.Join(" ", args.Parameters), out _info);
+			}
 			if (ReturnString == "")
 			{
 				args.Args.Data.SendText(_info.ToString());
@@ -239,14 +316,14 @@ namespace IcyBot.Modules
 				return;
 			}
 			Weapons _Weapons;
-			string ReturnString = "";
-			if (args.Parameters[0] != "-k")
+			string ReturnString = string.Empty;
+			if (args.Parameters[0].StartsWith("-"))
 			{
-				ReturnString = GetWeapons(string.Join(" ", args.Parameters), out _Weapons);
+				ReturnString = GetWeapons(string.Join(" ", args.Parameters.Skip(1)), out _Weapons, args.Parameters[0].Remove(0, 1));
 			}
 			else
 			{
-				ReturnString = GetWeapons(string.Join(" ", args.Parameters.Skip(1)), out _Weapons, true);
+				ReturnString = GetWeapons(string.Join(" ", args.Parameters), out _Weapons);
 			}
 			if (ReturnString == "")
 			{
@@ -272,7 +349,15 @@ namespace IcyBot.Modules
 				return;
 			}
 			Passives _info;
-			string ReturnString = GetPassive(string.Join(" ", args.Parameters), out _info);
+			string ReturnString = string.Empty;
+			if (args.Parameters[0].StartsWith("-"))
+			{
+				ReturnString = GetPassive(string.Join(" ", args.Parameters.Skip(1)), out _info, args.Parameters[0].Remove(0, 1));
+			}
+			else
+			{
+				ReturnString = GetPassive(string.Join(" ", args.Parameters), out _info);
+			}
 			if (ReturnString == "")
 			{
 				args.Args.Data.SendText(_info.ToString());
@@ -291,7 +376,15 @@ namespace IcyBot.Modules
 				return;
 			}
 			Information _info;
-			string ReturnString = GetSkill(string.Join(" ", args.Parameters), out _info);
+			string ReturnString = "";
+			if (args.Parameters[0].StartsWith("-"))
+			{
+				ReturnString = GetSkill(string.Join(" ", args.Parameters.Skip(1)), out _info, args.Parameters[0].Remove(0, 1));
+			}
+			else
+			{
+				ReturnString = GetSkill(string.Join(" ", args.Parameters), out _info);
+			}
 			if (ReturnString == "")
 			{
 				args.Args.Data.SendText(_info.Skill.ToString());
@@ -311,7 +404,16 @@ namespace IcyBot.Modules
 			}
 
 			Breads _info;
-			string ReturnString = GetBread(string.Join(" ", args.Parameters), out _info);
+			string ReturnString = string.Empty;
+			if (args.Parameters[0].StartsWith("-"))
+			{
+				ReturnString = GetBread(string.Join(" ", args.Parameters.Skip(1)), out _info, args.Parameters[0].Remove(0, 1));
+			}
+			else
+			{
+				ReturnString = GetBread(string.Join(" ", args.Parameters), out _info);
+			}
+			
 			if (ReturnString == "")
 			{
 				args.Args.Data.SendText(_info.ToString());
@@ -330,7 +432,15 @@ namespace IcyBot.Modules
 				return;
 			}
 			Information _info;
-			string ReturnString = GetCharacter(string.Join(" ", args.Parameters), out _info);
+			string ReturnString = string.Empty;
+			if (args.Parameters[0].StartsWith("-"))
+			{
+				ReturnString = GetCharacter(string.Join(" ", args.Parameters.Skip(1)), out _info, args.Parameters[0].Remove(0, 1));
+			}
+			else
+			{
+				ReturnString = GetCharacter(string.Join(" ", args.Parameters), out _info);
+			}
 			if (ReturnString == "")
 			{
 				args.Args.Data.SendText(_info.ToString());
@@ -364,7 +474,7 @@ namespace IcyBot.Modules
 			return _BreadNameTxt;
 		}
 
-		private string GetBread(string Name, out Breads _Info)
+		private string GetBread(string Name, out Breads _Info, string lang = "EnUs")
 		{
 			Name = Name.TrimStart(' ');
 			Locales _BreadNameTxt = GetBreadLocales(Name);
@@ -383,7 +493,7 @@ namespace IcyBot.Modules
 
 			_Info = new Breads();
 			_Info.Stars = _Bread.Grade;
-			_Info.Name = _BreadNameTxt.EnUs;
+			_Info.Name = _BreadNameTxt.GetText(lang);
 			_Info.SellPrice = _Bread.Sellprice;
 			_Info.TrainPoint = _Bread.Trainpoint;
 			_Info.Class = _Bread.Class;
@@ -414,7 +524,7 @@ namespace IcyBot.Modules
 			return _GoddessNameTxt;
 		}
 
-		private string GetGoddess(string Name, out Goddesses _Info)
+		private string GetGoddess(string Name, out Goddesses _Info, string lang = "EnUs")
 		{
 			Name = Name.TrimStart(' ');
 			Locales _GoddessNameTxt = GetGoddessLocales(Name);
@@ -445,9 +555,9 @@ namespace IcyBot.Modules
 
 			_Info = new Goddesses();
 
-			_Info.Name = _GoddessNameTxt.EnUs;
-			_Info.SkillName = _GoddessSkillTxt.EnUs;
-			_Info.SkillDescription = _GoddessSkillDescTxt.EnUs;
+			_Info.Name = _GoddessNameTxt.GetText(lang);
+			_Info.SkillName = _GoddessSkillTxt.GetText(lang);
+			_Info.SkillDescription = _GoddessSkillDescTxt.GetText(lang);
 			_Info.SkillDuration = _Goddess.Bgduration;
 
 			return string.Empty;
@@ -476,7 +586,7 @@ namespace IcyBot.Modules
 			return _PassiveNameTxt;
 		}
 
-		private string GetPassive(string Name, out Passives _Info)
+		private string GetPassive(string Name, out Passives _Info, string lang = "EnUs")
 		{
 			Name = Name.TrimStart(' ');
 			string[] Params = Name.Split(' ');
@@ -530,12 +640,12 @@ namespace IcyBot.Modules
 			_Info.GreatChance = _Passive.Huge;
 			_Info.HonorCost = _Passive.Cost[0].Value;
 			_Info.GoldCost = _Passive.Cost[1].Value;
-			_Info.Description = _PassiveDescTxt.EnUs;
-			_Info.Name = _PassiveNameTxt.EnUs;
+			_Info.Description = _PassiveDescTxt.GetText(lang);
+			_Info.Name = _PassiveNameTxt.GetText(lang);
 			if (_CharacterStat != null)
 			{
 				_Info.HeroStars = _CharacterStat.Grade;
-				_Info.HeroRequired = _PassiveUnlockHeroTxt.EnUs;
+				_Info.HeroRequired = _PassiveUnlockHeroTxt.GetText(lang);
 			}
 			_Info.Level = _Passive.Level;
 			_Info.UpgradeType = _Passive.Unlockcond.Type;
@@ -567,7 +677,7 @@ namespace IcyBot.Modules
 			return _CharNameTxt;
 		}
 
-		private string GetSkill(string Name, out Information _Info)
+		private string GetSkill(string Name, out Information _Info, string lang = "EnUs")
 		{
 			Name = Name.TrimStart(' ');
 			Locales _CharNameTxt = GetCharacterLocales(Name);
@@ -620,15 +730,15 @@ namespace IcyBot.Modules
 			}
 
 			_Info = new Information();
-			_Info.Skill.Name = _SkillNameTxt.EnUs;
-			_Info.Skill.Description = _SkillDescTxt.EnUs;
-			_Info.Skill.SubDescription = _SkillSubDescTxt.EnUs;
+			_Info.Skill.Name = _SkillNameTxt.GetText(lang);			
+			_Info.Skill.Description = _SkillDescTxt.GetText(lang);
+			_Info.Skill.SubDescription = _SkillSubDescTxt.GetText(lang);
 			_Info.Skill.CastTime = _CharSkill.Anidurationlimitsec;
 			_Info.Skill.Type = _CharSkill.Type;
 			return string.Empty;
 		}
 
-		private string GetCharacter(string Name, out Information _Info)
+		private string GetCharacter(string Name, out Information _Info, string lang = "EnUs")
 		{
 			Name = Name.TrimStart(' ');
 			_Info = null;
@@ -666,9 +776,9 @@ namespace IcyBot.Modules
 			//setting gender
 			_Info.Gender = _Char.Gender;
 			//setting name
-			_Info.Name = _CharNameTxt.EnUs;
+			_Info.Name = _CharNameTxt.GetText(lang);
 			//setting description
-			_Info.Description = _CharDescTxt.EnUs;
+			_Info.Description = _CharDescTxt.GetText(lang);
 			//setting character information stats
 			_Info.Stats.AttackDamage = _CharStat.Initialattdmg;
 			_Info.Stats.Defence = _CharStat.Defense;
@@ -711,7 +821,7 @@ namespace IcyBot.Modules
 			return _WeapNameTxt;
 		}
 
-		private string GetWeapons(string Name, out Weapons weapons, bool korean = false)
+		private string GetWeapons(string Name, out Weapons weapons, string lang = "EnUs")
 		{
 			weapons = null;
 			Name = Name.TrimStart(' ');
@@ -793,12 +903,12 @@ namespace IcyBot.Modules
 
 			weapons = new Weapons();
 
-			weapons.Name = (_WeaponNameTxt == null ? "Fill me!" : _WeaponNameTxt.EnUs);
-			weapons.Description = (_WeaponDescTxt != null ? _WeaponDescTxt.EnUs : "");
+			weapons.Name = (_WeaponNameTxt == null ? "Fill me!" : _WeaponNameTxt.GetText(lang));
+			weapons.Description = (_WeaponDescTxt != null ? _WeaponDescTxt.GetText(lang) : "");
 			weapons.AttackSpeed = _Weapon.Attspd;
 			weapons.AttackDamage = _Weapon.Attdmg;
-			weapons.CategoryDescription = _WeaponCategoryDescTxt.EnUs;
-			weapons.CategoryName = _WeaponCategoryNameTxt.EnUs;
+			weapons.CategoryDescription = _WeaponCategoryDescTxt.GetText(lang);
+			weapons.CategoryName = _WeaponCategoryNameTxt.GetText(lang);
 			weapons.Range = _Weapon.Range;
 			weapons.Rarity = _Weapon.Rarity;
 			weapons.SellAmount = _WeaponSell.Goldcost;
@@ -809,12 +919,9 @@ namespace IcyBot.Modules
 
 			if (_WeaponLegendary != null)
 			{
-				weapons.RequiredHero = _WeaponRequiredHeroNameTxt.EnUs;
+				weapons.RequiredHero = _WeaponRequiredHeroNameTxt.GetText(lang);
 				if (_WeaponLegendarySkillTxt != null)
-					if (!korean)
-						weapons.SkillDesciption = (string.IsNullOrWhiteSpace(_WeaponLegendarySkillTxt.EnUs) || _WeaponLegendarySkillTxt.EnUs == "Fill me!" ? _WeaponLegendarySkillTxt.KoKr : _WeaponLegendarySkillTxt.EnUs);
-					else
-						weapons.SkillDesciption = (string.IsNullOrWhiteSpace(_WeaponLegendarySkillTxt.KoKr) || _WeaponLegendarySkillTxt.KoKr == "Fill me!" ? _WeaponLegendarySkillTxt.KoKr : _WeaponLegendarySkillTxt.KoKr);
+					weapons.SkillDesciption = (string.IsNullOrWhiteSpace(_WeaponLegendarySkillTxt.GetText(lang)) || _WeaponLegendarySkillTxt.GetText(lang) == "Fill me!" ? _WeaponLegendarySkillTxt.KoKr : _WeaponLegendarySkillTxt.GetText(lang));
 				if (_WeaponLegendaryUpgrade != null)
 				{
 					weapons.RequiredPowder = _WeaponLegendaryUpgrade.Reqpowder;

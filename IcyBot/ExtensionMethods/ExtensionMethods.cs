@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Meebey.SmartIrc4net;
 
@@ -12,8 +12,8 @@ namespace IcyBot
 		public static void SendTextReal(IrcMessageData data, string text, string color, params object[] param)
 		{
 			if (param == null)
-				param = new object[0];
-			string message = string.Format(text, param).Replace("\r", " ").Replace("\n", " ").Replace("  ", " ");
+				param = new object[0];			
+			string message = string.Format(text, param).Replace("\r", " ").Replace("\n", " ").Replace("  ", " ").Trim();
 			var CInfo = IcyBot.Config.ircConnectionInfo.FirstOrDefault(x => x.ServerName.ToLower() == data.Irc.Address.ToLower());
 			if (CInfo != null)
 			{

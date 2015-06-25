@@ -9,56 +9,89 @@ using Newtonsoft.Json.Linq;
 namespace IcyBot
 {
 
-    public class Locales
-    {
-        [JsonProperty("ru_ru")]
-        public string RuRu { get; set; }
+	public class Locales
+	{
+		[JsonProperty("ru_ru")]
+		public string RuRu { get; set; }
 
-        [JsonProperty("ko_kr")]
-        public string KoKr { get; set; }
+		[JsonProperty("ko_kr")]
+		public string KoKr { get; set; }
 
-        [JsonProperty("fr_fr")]
-        public string FrFr { get; set; }
+		[JsonProperty("fr_fr")]
+		public string FrFr { get; set; }
 
-        [JsonProperty("zh_tw")]
-        public string ZhTw { get; set; }
+		[JsonProperty("zh_tw")]
+		public string ZhTw { get; set; }
 
-        [JsonProperty("it_it")]
-        public string ItIt { get; set; }
+		[JsonProperty("it_it")]
+		public string ItIt { get; set; }
 
-        [JsonProperty("en_us")]
-        public string EnUs { get; set; }
+		[JsonProperty("en_us")]
+		public string EnUs { get; set; }
 
-        [JsonProperty("de_de")]
-        public string DeDe { get; set; }
+		[JsonProperty("de_de")]
+		public string DeDe { get; set; }
 
-        [JsonProperty("th_th")]
-        public string ThTh { get; set; }
+		[JsonProperty("th_th")]
+		public string ThTh { get; set; }
 
-        [JsonProperty("id")]
-        public string Id { get; set; }
+		[JsonProperty("id")]
+		public string Id { get; set; }
 
-        [JsonProperty("pt_br")]
-        public string PtBr { get; set; }
+		[JsonProperty("pt_br")]
+		public string PtBr { get; set; }
 
-        [JsonProperty("zh_cn")]
-        public string ZhCn { get; set; }
+		[JsonProperty("zh_cn")]
+		public string ZhCn { get; set; }
 
-        [JsonProperty("ja_jp")]
-        public string JaJp { get; set; }
+		[JsonProperty("ja_jp")]
+		public string JaJp { get; set; }
 
-        [JsonProperty("es_es")]
-        public string EsEs { get; set; }
-    }
+		[JsonProperty("es_es")]
+		public string EsEs { get; set; }
 
-    public class TextLocale
-    {
+		public string GetText(string lang = "EnUs")
+		{
+			switch (lang)
+			{
+				case "RuRu":
+					return (RuRu == null ? "Fill Me!" : RuRu);
+				case "KoKr":
+					return (KoKr == null ? "Fill Me!" : KoKr);
+				case "FrFr":
+					return (FrFr == null ? "Fill Me!" : FrFr);
+				case "ZhTw":
+					return (ZhTw == null ? "Fill Me!" : ZhTw);
+				case "ItIt":
+					return (ItIt == null ? "Fill Me!" : ItIt);
+				case "EnUs":
+					return (EnUs == null ? "Fill Me!" : EnUs);
+				case "DeDe":
+					return (DeDe == null ? "Fill Me!" : DeDe);
+				case "ThTh":
+					return (ThTh == null ? "Fill Me!" : ThTh);
+				case "PtBr":
+					return (PtBr == null ? "Fill Me!" : PtBr);
+				case "ZhCn":
+					return (ZhCn == null ? "Fill Me!" : ZhCn);
+				case "JaJp":
+					return (JaJp == null ? "Fill Me!" : JaJp);
+				case "EsEs":
+					return (EsEs == null ? "Fill Me!" : EsEs);
+				default:
+					return (EnUs == null ? "Fill Me!" : EnUs);
+			}
+		}
+	}
 
-        [JsonProperty("status")]
-        public string Status { get; set; }
+	public class TextLocale
+	{
 
-        [JsonProperty("textlocale")]
-        public Locales[] locale { get; set; }
-    }
+		[JsonProperty("status")]
+		public string Status { get; set; }
+
+		[JsonProperty("textlocale")]
+		public Locales[] locale { get; set; }
+	}
 
 }

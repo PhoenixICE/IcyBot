@@ -69,6 +69,10 @@ namespace IcyBot
 
 		private static void Ignore(CommandArgs args)
 		{
+			if (!args.Args.IsOp())
+			{
+				return;
+			}
 			string inputstring = string.Join(" ", args.Parameters);
 			var user = args.Client.GetChannelUser(args.Args.Data.Channel, inputstring);
 			if (user == null)
@@ -91,6 +95,10 @@ namespace IcyBot
 
 		private static void UnIgnore(CommandArgs args)
 		{
+			if (!args.Args.IsOp())
+			{
+				return;
+			}
 			string inputstring = string.Join(" ", args.Parameters);
 			var user = args.Client.GetChannelUser(args.Args.Data.Channel, inputstring);
 			if (user == null)

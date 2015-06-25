@@ -27,7 +27,7 @@ namespace IcyBot.Modules
 
 		public static readonly List<string> Dungeons2 = new List<string>()
 		{
-			"The Void", "Path of Rage", "Road to Ruin"
+			"The Void", "Path of Rage"//, "Road to Ruin"
 		};
 
 		public static readonly List<string> DungeonHeroes = new List<string>()
@@ -37,7 +37,7 @@ namespace IcyBot.Modules
 
 		public static readonly List<string> DungeonHeroes2 = new List<string>()
 		{
-			"Roland and Rochefort", "Cano and Theresa", "Melrisa and Demona"
+			"Roland and Rochefort", "Cano and Theresa"//, "Melrisa and Demona"
 		};
 
 		public static readonly List<string> DungeonRestrictions = new List<string>()
@@ -47,21 +47,21 @@ namespace IcyBot.Modules
 
 		public static readonly List<string> DungeonMechanics = new List<string>()
 		{
-			"More than 30 SP Can be Risky!", "When one enemy is down, the other get stronger!", "N/A"
+			"More than 30 SP Can be Risky!", "When one enemy is down, the other get stronger!"//, "N/A"
 		};
 
 		public static readonly DateTime DateDungeonWorld = new DateTime(2015, 2, 16, 11, 0, 0);
 
 		public override void Initialize()
 		{
-			Commands.ChatCommands.Add(new Command(WorldBossDungeonInfoMain, "info"));
+			//Commands.ChatCommands.Add(new Command(WorldBossDungeonInfoMain, "info"));
 		}
 
 		public void WorldBossDungeonInfoMain(CommandArgs args)
 		{
-			args.Args.Data.SendText(WorldBossInfo());
-			args.Args.Data.SendText(DungeonInfo());
-			args.Args.Data.SendText(DungeonInfo2());
+			//args.Args.Data.SendText(WorldBossInfo());
+			//args.Args.Data.SendText(DungeonInfo());
+			//args.Args.Data.SendText(DungeonInfo2());
 		}
 
 		private string DungeonInfo()
@@ -74,7 +74,7 @@ namespace IcyBot.Modules
 		private string DungeonInfo2()
 		{
 			int Weeks = (int)Math.Floor(((DateTime.Now - DateDungeonWorld).TotalDays / 7.0));
-			int dungeon = Weeks % Dungeons.Count;
+			int dungeon = Weeks % Dungeons2.Count;
 			return String.Format("Dungeon this week is {6}{0}{6}, dungeon mechanic is {6}{2}{6}, drops {6}{1}{6}. Next week is {6}{3}{6}, dungeon mechanic is {6}{5}{6}, drops {6}{4}{6}.", Dungeons2[dungeon], DungeonHeroes2[dungeon], DungeonMechanics[dungeon], (dungeon == Dungeons2.Count - 1 ? Dungeons2[0] : Dungeons2[dungeon + 1]), (dungeon == DungeonHeroes2.Count - 1 ? DungeonHeroes2[0] : DungeonHeroes2[dungeon + 1]), (dungeon == DungeonMechanics.Count - 1 ? DungeonMechanics[0] : DungeonMechanics[dungeon + 1]), ControlCode.Bold);
 		}
 

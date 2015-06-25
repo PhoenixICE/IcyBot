@@ -70,7 +70,31 @@ namespace IcyBot
         public double CritPower { get; set; }
         public double CritChance { get; set; }
         public double LifeStael { get; set; }
-        
+
+		public double GetHA(int level, int train)
+		{
+			return CalcStat(level, AttackDamage, GrowthDamage) * (1 + (train / 10.0));
+		}
+
+		public double GetHP(int level, int train)
+		{
+			return CalcStat(level, HP, GrowthHP) * (1 + (train / 10.0));
+		}
+
+		public double GetDefence(int level, int train)
+		{
+			return CalcStat(level, Defence, GrowthDefence) * (1 + (train / 10.0));
+		}
+
+		public double GetResist(int level, int train)
+		{
+			return CalcStat(level, Resist, GrowthResist) * (1 + (train / 10.0));
+		}
+
+		private double CalcStat(int level, double baseStat, double growthStat)
+		{
+			return baseStat + (growthStat * level);
+		}
     }
 
 	public class Weapons
